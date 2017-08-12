@@ -1,80 +1,94 @@
 var _ = require('lodash');
 var fs = require('fs');
 var path = require('path');
-var Twit = require('twit');
 var mmm = require('mmmagic');
 
-var SUPPORTED_IMG_TYPES = ['image/png', 'image/jpeg', 'image/gif'];
+var App = require('./src/app')
+var LocalImageRepositoryRandomizer = require('./src/repo')
 
-var app_config = {
+var appConfig = {
     delay : 5, //number of minutes before a bot posts an image
-    folder : 'test_images'
+    folder : 'images'
 }
 
-fs.readFile('credentials.json', function processClientSecrets(err, content) {
-    if (err) {
-        console.log('Error loading client secret file: ' + err);
-        return;
+fs.readFile('config/credentials.json', function processClientSecrets(err, content) {
+    var credentials = JSON.parse(content);
+    var imageRandomizer = new LocalImageRepositoryRandomizer(path.resolve(__dirname, appConfig.folder));
+    var botApp = new App(credentials, appConfig, imageRandomizer);
+    try {
+        botApp.start();
+        console.log('Bot app started.')
+    } 
+    catch (error) {
+        botApp.shutdown();
+        console.error('Bot app shutdown due to error ' + error)
     }
+});
+
+// fs.readFile('credentials.json', function processClientSecrets(err, content) {
+//     if (err) {
+//         console.log('Error loading client secret file: ' + err);
+//         return;
+//     }
   
-    credentials = JSON.parse(content)
-    var api = Twit(credentials.twitter)
+//     credentials = JSON.parse(content)
+//     var api = Twit(credentials.twitter)
 
-    var interval_in_millisecs = app_config.delay * 60000;
-    var INTERVAL_ID = setInterval(function() {
-        const isDirectory = source => fs.lstatSync(source).isDirectory();
-        const getDirectories = source => fs.readdirSync(source).map(name => path.resolve(source, name)).filter(isDirectory);
+//     var interval_in_millisecs = app_config.delay * 60000;
+//     var INTERVAL_ID = setInterval(function() {
+//         const isDirectory = source => fs.lstatSync(source).isDirectory();
+//         const getDirectories = source => fs.readdirSync(source).map(name => path.resolve(source, name)).filter(isDirectory);
 
-        directories = getDirectories(path.resolve(__dirname, app_config.folder));
-        random_folder = directories[Math.floor(Math.random() * directories.length)]
-        console.log(random_folder)
+//         directories = getDirectories(path.resolve(__dirname, app_config.folder));
+//         random_folder = directories[Math.floor(Math.random() * directories.length)]
+//         console.log(random_folder)
 
-        files_in_random_directory = []
-        fs.readdirSync(random_folder).forEach(file => {
-            files_in_random_directory.push(file)
-        });
+//         files_in_random_directory = []
+//         fs.readdirSync(random_folder).forEach(file => {
+//             files_in_random_directory.push(file)
+//         });
 
-        random_directory_name = random_folder.split(path.sep).pop()
-        random_file = path.resolve(random_folder, files_in_random_directory[Math.floor(Math.random() * files_in_random_directory.length)]);
+//         random_directory_name = random_folder.split(path.sep).pop()
+//         random_file = path.resolve(random_folder, files_in_random_directory[Math.floor(Math.random() * files_in_random_directory.length)]);
 
-        var Magic = mmm.Magic;
-        var magic = new Magic(mmm.MAGIC_MIME_TYPE);
-        magic.detectFile(random_file, function(err, result) {
-            if (err) {
-                throw err;
-            }
+//         var Magic = mmm.Magic;
+//         var magic = new Magic(mmm.MAGIC_MIME_TYPE);
+//         magic.detectFile(random_file, function(err, result) {
+//             if (err) {
+//                 throw err;
+//             }
 
-            if (_.indexOf(SUPPORTED_IMG_TYPES, result) > -1) {
-                var b64content = fs.readFileSync(random_file, { encoding: 'base64' });
-                api.post('media/upload', { media_data: b64content }, function (err, data, response) {
-                    if (err) {
-                    console.log('ERROR');
-                    console.log(err);
-                    }
-                    else {
-                        console.log('Uploaded an image!');
+//             if (_.indexOf(SUPPORTED_IMG_TYPES, result) > -1) {
+//                 var b64content = fs.readFileSync(random_file, { encoding: 'base64' });
+//                 api.post('media/upload', { media_data: b64content }, function (err, data, response) {
+//                     if (err) {
+//                     console.log('ERROR');
+//                     console.log(err);
+//                     }
+//                     else {
+//                         console.log('Uploaded an image!');
 
-                        api.post('statuses/update', {
-                            status : random_directory_name,
-                            media_ids: new Array(data.media_id_string)
-                        },
-                            function(err, data, response) {
-                                if (err) {
-                                    console.log('Error!');
-                                    console.log(err);
-                                }
-                                else {
-                                    console.log('Posted an image!');
-                                }
-                        }
-                        );
-                    }
-                });
-            }
-        });
+//                         api.post('statuses/update', {
+//                             status : random_directory_name,
+//                             media_ids: new Array(data.media_id_string)
+//                         },
+//                             function(err, data, response) {
+//                                 if (err) {
+//                                     console.log('Error!');
+//                                     console.log(err);
+//                                 }
+//                                 else {
+//                                     console.log('Posted an image!');
+//                                 }
+//                         }
+//                         );
+//                     }
+//                 });
+//             }
+//         });
 
-    }, interval_in_millisecs)
-})
+//     }, interval_in_millisecs)
+// })
 
 // var readline = require('readline');
 
