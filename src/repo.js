@@ -1,26 +1,36 @@
+var _ = require('lodash')
 var fs = require('fs');
 var path = require('path');
 
-var SUPPORTED_IMG_TYPES = ['image/png', 'image/jpeg', 'image/gif'];
-
 var LocalImageRepositoryRandomizer = function(folder) {
     this.folder = folder
+    this.shuffleFolderDirectory(folder)
 }
 
-LocalImageRepositoryRandomizer.prototype.getRandomFile = function() {
+LocalImageRepositoryRandomizer.prototype.shuffleFolderDirectory = function(folder) {
     const isDirectory = source => fs.lstatSync(source).isDirectory();
     const getDirectories = source => fs.readdirSync(source).map(name => path.resolve(source, name)).filter(isDirectory);
 
-    directories = getDirectories(this.folder);
-    randomFolder = this.getRandomItemInArray(directories);
-    randomFolderName = randomFolder.split(path.sep).pop();
+    this.shuffledDirectories = _.shuffle(getDirectories(this.folder))
+    console.log('Directories inside ' + this.folder + ' shuffled.')
+}
 
-    filesInRandomFolder = this.getFilesInFolder(randomFolder);
-    randomFile = path.resolve(randomFolder, this.getRandomItemInArray(filesInRandomFolder));
+LocalImageRepositoryRandomizer.prototype.getRandomFile = function() {
+    if (!_.isEmpty(this.shuffledDirectories)) {
+        var nextDirectoryPath = this.shuffledDirectories.shift();
+        var nextDirectoryName = nextDirectoryPath.split(path.sep).pop();
 
-    return {
-        folderName : randomFolderName,
-        imagePath : randomFile
+        filesInRandomFolder = this.getFilesInFolder(nextDirectoryPath);
+        randomFile = path.resolve(nextDirectoryPath, this.getRandomItemInArray(filesInRandomFolder));
+    
+        return {
+            folderName : nextDirectoryName,
+            imagePath : randomFile
+        }
+    }
+    else {
+        this.shuffleFolderDirectory(this.folder)
+        return this.getRandomFile()
     }
 }
 
@@ -29,11 +39,11 @@ LocalImageRepositoryRandomizer.prototype.getRandomItemInArray = function(array) 
 }
 
 LocalImageRepositoryRandomizer.prototype.getFilesInFolder = function(folder) {
-    filesInRandomFolder = []
-    fs.readdirSync(randomFolder).forEach(file => {
-        filesInRandomFolder.push(file)
+    filesInFolder = []
+    fs.readdirSync(folder).forEach(file => {
+        filesInFolder.push(file)
     });
-    return filesInRandomFolder;
+    return filesInFolder;
 }
 
 module.exports = LocalImageRepositoryRandomizer;
