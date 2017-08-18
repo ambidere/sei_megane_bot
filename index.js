@@ -5,6 +5,7 @@ var mmm = require('mmmagic');
 
 var App = require('./src/app')
 var LocalImageRepositoryRandomizer = require('./src/repo')
+var GoogleDriveImageRandomizer = require('./src/drive')
 
 var appConfig = {
     delay : 10, //number of minutes before a bot posts an image
@@ -13,10 +14,12 @@ var appConfig = {
 
 fs.readFile('config/credentials.json', function processClientSecrets(err, content) {
     var credentials = JSON.parse(content);
-    var imageRandomizer = new LocalImageRepositoryRandomizer(path.resolve(__dirname, appConfig.folder));
-    var botApp = new App(credentials, appConfig, imageRandomizer);
+    var googleCredentials = credentials.googleapi;
+    var driveRandomizer = new GoogleDriveImageRandomizer(googleCredentials.api_key, googleCredentials.parent_folder)
+    //var imageRandomizer = new LocalImageRepositoryRandomizer(path.resolve(__dirname, appConfig.folder));
+    //var botApp = new App(credentials, appConfig, imageRandomizer);
     try {
-        botApp.start();
+        //botApp.start();
         console.log('Bot app started.')
     } 
     catch (error) {
