@@ -15,7 +15,7 @@ LocalImageRepositoryRandomizer.prototype.shuffleFolderDirectory = function(folde
     console.log('Directories inside ' + this.folder + ' shuffled.')
 }
 
-LocalImageRepositoryRandomizer.prototype.getRandomFile = function() {
+LocalImageRepositoryRandomizer.prototype.requestRandomImage = function(callback) {
     if (!_.isEmpty(this.shuffledDirectories)) {
         var nextDirectoryPath = this.shuffledDirectories.shift();
         var nextDirectoryName = nextDirectoryPath.split(path.sep).pop();
@@ -23,14 +23,15 @@ LocalImageRepositoryRandomizer.prototype.getRandomFile = function() {
         filesInRandomFolder = this.getFilesInFolder(nextDirectoryPath);
         randomFile = path.resolve(nextDirectoryPath, this.getRandomItemInArray(filesInRandomFolder));
     
-        return {
+        image = {
             folderName : nextDirectoryName,
             imagePath : randomFile
         }
+        callback(image)
     }
     else {
         this.shuffleFolderDirectory(this.folder)
-        return this.getRandomFile()
+        this.requestRandomImage(callback)
     }
 }
 

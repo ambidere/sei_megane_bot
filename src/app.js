@@ -13,19 +13,21 @@ var TwitterImageBotApp = function(credentials, config, imageRandomizer) {
 }
 
 TwitterImageBotApp.prototype.start = function() {
-    this.performBotAction()
-    this.process = setInterval(this.performBotAction.bind(this), this.delay)
+    this.process = setInterval(this.requestImage.bind(this), this.delay)
     console.log('Bot process started.');
 }
 
-TwitterImageBotApp.prototype.performBotAction = function() {
-    randomImageData = this.randomizer.getRandomFile();
+TwitterImageBotApp.prototype.requestImage = function() {
+    this.randomizer.requestRandomImage(this.performBotAction.bind(this));
+}
+
+TwitterImageBotApp.prototype.performBotAction = function(imageData) {
     var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
-    magic.detectFile(randomImageData.imagePath, function(error, result) {
+    magic.detectFile(imageData.imagePath, function(error, result) {
         this.handleError(error)
 
         if (_.indexOf(SUPPORTED_IMG_TYPES, result) > -1) {
-            this.postImageToTwitter(randomImageData);
+            this.postImageToTwitter(imageData);
         }
     }.bind(this));
 }
