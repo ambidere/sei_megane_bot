@@ -10,10 +10,17 @@ var TwitterImageBotApp = function(credentials, config, imageRandomizer) {
     this.config = config;
     this.delay = config.delay * 60000
     this.randomizer = imageRandomizer;
+    this.appStarted = false;
 }
 
 TwitterImageBotApp.prototype.start = function() {
+    if (this.appStarted) {
+        console.log('Bot process already started.');
+        return;
+    }
+
     this.process = setInterval(this.requestImage.bind(this), this.delay)
+    this.appStarted = true;
     console.log('Bot process started.');
 }
 
@@ -67,6 +74,7 @@ TwitterImageBotApp.prototype.handleError = function(error) {
 
 TwitterImageBotApp.prototype.shutdown = function() {
     clearInterval(this.process)
+    this.appStarted = false
     console.log('Bot process stopped.');
 }
 
