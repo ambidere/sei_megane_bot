@@ -1,6 +1,6 @@
 var config = {
     app : {
-        delay : 5, //delay in minutes before new photo will be posted to Twitter
+        delay : process.env.POST_DELAY, //delay in minutes before new photo will be posted to Twitter
         mode: "gdrive", //google drive mode or local folder mode
         folder : "images" //folder of parent of photos
     },
