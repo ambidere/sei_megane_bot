@@ -4,8 +4,7 @@
   "description": "Seiyuu megane bot",
   "main": "index.js",
   "scripts": {
-    "start": "node",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index"
   },
   "repository": {
     "type": "git",
@@ -29,5 +28,9 @@
     "mmmagic": "^0.4.5",
     "tmp": "0.0.33",
     "twit": "^2.2.9"
+  },
+  "engines": {
+    "node": "4.6.0",
+    "npm": "3.10.3"
   }
 }
